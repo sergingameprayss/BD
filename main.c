@@ -7,10 +7,10 @@
 
 #define path "exemplos/"
 
-void print_usage (const char *p_name) {
+void print_usage (char *p_name) {
     printf("Usage:\n");
-    printf("%s mincover / keys / normalform --fds <arquivo>", p_name);
-    printf("%s closure --fds <arquivo> --X <atributo>");
+    printf("%s mincover / keys / normalform --fds <arquivo>\n", p_name);
+    printf("%s closure --fds <arquivo> --X <atributo>\n", p_name);
 }
 
 int handle_closure (int argc, char **argv) {
@@ -24,8 +24,7 @@ int handle_closure (int argc, char **argv) {
         {NULL, 0, NULL, 0},
     };
     
-
-    int opt_index = 2;
+    optind = 2;
 
     while ((opt = getopt_long(argc, argv, "", long_options, NULL)) != -1) {
         switch (opt){
@@ -63,7 +62,7 @@ int handle_standards (const char *op_name, int argc, char **argv) {
         {NULL, 0, NULL, 0},
     };
 
-    int opt_index = 2;
+    optind = 2;
 
     while ((opt = getopt_long(argc, argv, "", long_options, NULL)) != -1) {
         switch (opt){
@@ -82,7 +81,7 @@ int handle_standards (const char *op_name, int argc, char **argv) {
         return 1;
     }
 
-    printf("top operações\n");
+    printf("boa dogao!  operação escolhida foi: %s\n", op_name);
 
     return 0;
 }
