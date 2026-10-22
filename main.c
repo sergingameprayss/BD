@@ -5,22 +5,41 @@
 #include <string.h>
 #include <getopt.h>
 
+#include "fd.h"
+#include "file_handler.h"
+
 #define path "exemplos/"
 
-void print_usage (char *p_name) {
+typedef enum {
+    MIN_COVER,
+    KEYS, 
+    NORMAL,
+    CLOSURE
+} operations;
+
+char *p_name;
+
+
+void print_usage () {
     printf("Usage:\n");
     printf("%s mincover / keys / normalform --fds <arquivo>\n", p_name);
     printf("%s closure --fds <arquivo> --X <atributo>\n", p_name);
 }
 
-int handle_closure (int argc, char **argv) {
+int handle_closure (int argc, char **argv, fd_set_t *sys) {
     char *file_name = NULL;
     char *atributes = NULL;
     int opt;
 
+    if (strcmp(argv[1], "closure")) {
+        fprintf(stderr, "ERROR");
+        return ERROR;
+    }
+    init_fd_set(sys);
+
     struct option long_options[] = {
         {"fds", required_argument, NULL, 'f'},
-        {"x", required_argument, NULL, 'x'},
+        {"X", required_argument, NULL, 'x'},
         {NULL, 0, NULL, 0},
     };
     
@@ -31,7 +50,7 @@ int handle_closure (int argc, char **argv) {
             case 'f':
                 file_name = optarg;
                 break;
-            case 'X':
+            case 'x':
                 atributes = optarg;
                 break;
             case '?':
@@ -49,13 +68,29 @@ int handle_closure (int argc, char **argv) {
 
     //make what we need boy
     printf("closure pae\n");
+    parse_fds_file(file_name, sys);
+    print_fd_set(sys);
 
-    return 0;
+    return OK;
 }
-
+// we can merge this function with closure or just let all operations functions separeted and let this code in main...
+// TODO review switch case 
 int handle_standards (const char *op_name, int argc, char **argv) {
     char *file_name = NULL;
-    int opt;
+    int opt, operation;
+
+    if (!strcmp(op_name, "mincover"))
+        operation = MIN_COVER;
+    else if (!strcmp(op_name, "keys"))
+        operation = KEYS;
+    else if (!strcmp(op_name, "normalform"))
+        operation = NORMAL;
+    else {
+        fprintf(stderr, "ERROR: operation dont exists");
+        print_usage();
+        return ERROR;
+    }
+
 
     struct option long_options[] = {
         {"fds", required_argument, NULL, 'f'},
@@ -71,42 +106,54 @@ int handle_standards (const char *op_name, int argc, char **argv) {
                 break;
             default:
                 print_usage(argv[0]);
-                return 1;
+                return ERROR;
         }
     }
 
     if (!file_name) {
         fprintf(stderr, "ERROR: requires the --fds flag\n");
         print_usage(argv[0]);
-        return 1;
+        return ERROR;
     }
 
     printf("boa dogao!  operação escolhida foi: %s\n", op_name);
 
-    return 0;
+    switch (operation) {
+        case MIN_COVER:
+            //TODO implement this
+            break;
+        case KEYS:
+            //TODO implement this too
+            break;
+        case NORMAL: 
+            //TODO implement this too too
+            break;
+        default:
+            return ERROR;
+        }
+
+
+    return OK;
 }
 
 
 int main (int argc, char *argv[]) {
     char *op = NULL;
+    fd_set_t sys;
 
-
+    p_name = argv[0];
     if (argc < 2) { 
-        print_usage(argv[0]);
-        return 1;
+        print_usage();
+        return ERROR;
     }
 
     op = argv[1];
 
-    if (!strcmp(op, "closure")) {
-        handle_closure(argc, argv);
-    } else if (!strcmp(op, "mincover") || !strcmp(op, "keys") || !strcmp(op, "normalform")) {
-        handle_standards(op, argc, argv);
-    } else {
-        fprintf(stderr, "ERROR: Unknown operation: %s\n", op);
-        print_usage(argv[0]);
-        return 1;
-    }
 
-    return 0;
+    if (!strcmp(op, "closure"))
+        handle_closure(argc, argv, &sys);
+    else 
+        handle_standards(op, argc, argv);
+
+    return OK;
 }
