@@ -71,6 +71,12 @@ int handle_closure (int argc, char **argv, fd_set_t *sys) {
     parse_fds_file(file_name, sys);
     print_fd_set(sys);
 
+    bool atributes_closure[MAX_ATTRS];
+
+    closure(sys, atributes, atributes_closure);
+
+    print_set(atributes, atributes_closure, MAX_ATTRS);
+
     return OK;
 }
 // we can merge this function with closure or just let all operations functions separeted and let this code in main...

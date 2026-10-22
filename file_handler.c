@@ -81,11 +81,11 @@ int reading_f (fd_set_t *sys, FILE *file) {
             reading_lhs = false;
         } else if (c == ',') {
             reading_lhs = true;
-            index++;
+            index++; // each common is a fd calculated
         }   
     }
     
-    sys->size = index; //TODO ver necessidade da variavel index
+    sys->size = index + 1; //TODO ver necessidade da variavel index
     if (c == EOF) {
         fprintf(stderr, "ERROR: reach the end of the file before the ending character '}'");
         return ERROR;

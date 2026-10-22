@@ -25,6 +25,10 @@ typedef struct fd_set {
 
 void init_fd_set (fd_set_t *sys);
 
+int closure (const fd_set_t *sys, const char *attr, bool *attr_clos);
+
+void print_set (const char *attr, bool *s, int s_size);
+
 void print_fd_set (fd_set_t *sys);
 
 #endif //FD
