@@ -27,7 +27,11 @@ void init_fd_set (fd_set_t *sys);
 
 int closure (const fd_set_t *sys, const char *attr, bool *attr_clos);
 
+int mincover(const fd_set_t *sys, fd_set_t *fd_mincover);
+
 void print_set (const char *attr, bool *s, int s_size);
+
+void print_fd(fd_set_t *sys);
 
 void print_fd_set (fd_set_t *sys);
 
