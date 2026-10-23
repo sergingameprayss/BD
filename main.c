@@ -81,7 +81,7 @@ int handle_closure (int argc, char **argv, fd_set_t *sys) {
 }
 // we can merge this function with closure or just let all operations functions separeted and let this code in main...
 // TODO review switch case 
-int handle_standards (const char *op_name, int argc, char **argv) {
+int handle_standards (const char *op_name, int argc, char **argv, fd_set_t *sys) {
     char *file_name = NULL;
     int opt, operation;
 
@@ -123,11 +123,15 @@ int handle_standards (const char *op_name, int argc, char **argv) {
     }
 
     printf("boa dogao!  operação escolhida foi: %s\n", op_name);
+    parse_fds_file(file_name, sys);
+    print_fd_set(sys);
 
     switch (operation) {
-        case MIN_COVER:
-            //TODO implement this
-            break;
+        case MIN_COVER:{
+            struct fd_set fd_mincover;
+            mincover(sys, &fd_mincover);
+            print_fd(&fd_mincover);
+        }
         case KEYS:
             //TODO implement this too
             break;
@@ -159,7 +163,7 @@ int main (int argc, char *argv[]) {
     if (!strcmp(op, "closure"))
         handle_closure(argc, argv, &sys);
     else 
-        handle_standards(op, argc, argv);
+        handle_standards(op, argc, argv, &sys);
 
     return OK;
 }
