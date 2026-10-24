@@ -33,7 +33,7 @@ Passo 2: Para cada dependência funcional, resultante do passo 1, contamos quant
 
 Passo 3: Para cada dependência funcional, resultante do passo 2, criamos uma dependência funcional temporária (`fd_t temp_fd = fd_mincover->fds[i]`), salvamos o lado esquerdo da dependência a ser retirada (`lhs[idx++] = 'A' +j`), ignoramos a dependencia funcional (`fd_mincover->fds[i].lhs[j] = false; fd_mincover->fds[i].rhs[j] = false`) e calculamos o fecho, se o lado direito da dependência retirada ainda estiver no fecho significa que a dependência funcional realmente pode ser retirada, então devemos retirá-la e puxar todas as dependências "para trás" (bloco do else), senão apenas devolvemos a dependência (`fd_mincover->fds[i] = temp_fd`)
 
-## Análise de 
+## Análise de complexidade 
 ### Mincover
 Considerando N o número de dependências, A = MAX_ATTRS, N' a quantidade de dependências após um passo e C a complexidade de closure, vamos analisar cada passo.
 
