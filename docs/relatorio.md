@@ -34,9 +34,54 @@ Passo 2: Para cada dependência funcional, resultante do passo 1, contamos quant
 
 Passo 3: Para cada dependência funcional, resultante do passo 2, criamos uma dependência funcional temporária (`fd_t temp_fd = fd_mincover->fds[i]`), salvamos o lado esquerdo da dependência a ser retirada (`lhs[idx++] = 'A' +j`), ignoramos a dependencia funcional (`fd_mincover->fds[i].lhs[j] = false; fd_mincover->fds[i].rhs[j] = false`) e calculamos o fecho, se o lado direito da dependência retirada ainda estiver no fecho significa que a dependência funcional realmente pode ser retirada, então devemos retirá-la e puxar todas as dependências "para trás" (bloco do else), senão apenas devolvemos a dependência (`fd_mincover->fds[i] = temp_fd`)
 
+## Análise de 
+### Mincover
+Considerando N o número de dependências, A = MAX_ATTRS, N' a quantidade de dependências após um passo e C a complexidade de closure, vamos analisar cada passo.
 
+Passo 1: 
+```c
+for(int i = 0; i < sys->size; i++){ // roda N vezes
+    for(int j = 0; j < MAX_ATTRS; j++){ // roda A vezes
+        if(sys->fds[i].rhs[j]){
+            for(int k = 0; k < MAX_ATTRS; k++) // roda A vezes
+            for(int k = 0; k < MAX_ATTRS; k++) // roda A vezes
+            // ou seja, A+A = 2A
+```
+Então, a complexidade é N*A*2A = O(N*A²) = O(N), já que A é uma constante. Além disso, o tamanho do conjunto de dependências funcionais pode no máximo ser N' = N*A
 
-## Análise de complexidade
+Passo 2:
+```c
+for(int i = 0; i < fd_mincover->size; i++){ // roda N' vezes
+    for(int k = 0; k < MAX_ATTRS; k++) // roda A vezes
+    for(int k = 0; k < MAX_ATTRS; k++){ // roda A vezes
+        if(fd_mincover->fds[i].lhs[k]){
+            for(int m = 0; m < MAX_ATTRS; m++) // roda A vezes
+            closure(fd_mincover, lhs_wo_k, attr_clos); // O(C)
+            for(int l = 0; l < MAX_ATTRS; l++) // roda A vezes
+            // ou seja 2A + O(C)
+        }
+    } // ou seja A*(2A + O(C))
+}
+```
+Então a complexidade é O(N'*A²*C), e substituindo N' por N e sabendo que N é uma constante temos O(N*C)
+
+Passo 3:
+```c
+for(int i = 0; i < fd_mincover->size; i++){ // roda N' vezes
+    for(int j = 0; j < MAX_ATTRS; j++) // roda A vezes
+    for (int j = 0; j < MAX_ATTRS; j++) // roda A vezes
+    closure(fd_mincover, lhs, attr_clos); // O(C)
+    for(int l = 0; l < MAX_ATTRS; l++) // roda A vezes
+    
+    // se for redundante, desloca todo o resto das dependencias
+    for (int k = i; k < fd_mincover->size - 1; k++) { // O(N') no pior caso
+        fd_mincover->fds[k] = fd_mincover->fds[k + 1];
+    }
+}
+```
+Então a complexidade é O(N'*(3A+C) + N'*N'), como A é constante e substituindo N' por N então O(N'*C + N²)
+
+Então no total temos O(N) + O(N*C) + O(N*C + N²), em outras palavras, O(N²) no pior casos.
 
 ## Estudos de caso
 
