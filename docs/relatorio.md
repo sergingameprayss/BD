@@ -17,11 +17,10 @@ Dado um arquivo .fds e um ponteiro para o conjunto U, F. Se U, então ler todo o
 
 ## Descrições dos algoritmos
 ### Closure
-Inicialmente, colocar os próprios atributos do fecho, no fecho, por exemplo, se queremos fecho de AB, colocamos {A,B}. Depois, para cada dependência funcional, se a letra está do lado esquerdo da dependência, mas não está nas letras do fecho, então não tem o que adicionar no fecho, caso contrário, eu olho o lado direito, se tem alguém que está na dependência, mas que não está no fecho, ele é adicionado, e reiniciamos o loop, a partir do momento que não tem mais o que ser adicionado, encerramos o loop.
-Então, inicialmente colocamos o atributo no fecho, depois para cada dependencia funcional (primeiro for) vamos analisar se o atributo j está na dp e se não está no fecho (ex: se fecho temos A, mas dependencia é BD->E, então não tem o que adicionar)
-Se passar por esse if, entramos no segundo for, pois, se temos o atributo no lado esquerdo, podemos colocar os atributos do lado direito.
-Quando que acaba?
-Depois de passar por todas as dependências e não ter mais o que colocar, reiniciando o primeiro for, no segundo if, o atributo vai estar lá, então new_attr vai permanecer false.
+O algoritmo para cálculo do fecho recebe como parâmetros universo de atributos U e o conjunto de dependências funcionais  F, representados por `sys`, o atributo que se deseja calcular o fecho (`attr`) e o ponteiro para o conjunto de atributos que representará o fecho (`attr_clos`). Inicialmente, verificamos se `sys` e `attr_clos` existem, se existirem, para cada atributo em `attr` o incluimos em attr_clos, ou seja, colocamos os atributos no fecho. Após isso, colocamos o controlador `new_attr` como falso e, para cada dependência funcional, verificamos se a letra no lado esquerdo está não está no fecho (`if (sys->fds[i].lhs[j] && !attr_clos[j])`), por exemplo, se no fecho temos {A} e a dependência é BD->E, então `lhs_valid = false` e pulamos essa iteração. Se `lhs_valid = true` então para cada letra no lado direito que não está no fecho (`if (sys->fds[i].rhs[j] && !attr_clos[j])`) nós a adicionamos no fecho (`attr_clos[j] = true`) e mantemos o loop funcionando para próximas verificações (`new_attr = true`).
+
+O loop encerra quando, na última passagem por todas as dependências funcionais (`for (int i = 0; i < sys->size; i++)`) não há nenhum atributo do lado direito que não esteja no fecho (não entra em `if (sys->fds[i].rhs[j] && !attr_clos[j])`), então como atribuimos (`new_attr = false`) e nunca mudamos para (`new_attr = true`), então o loop termina.
+
 
 ### Mincover
 O algoritmo da cobertura mínima é dividida em três passos: decompor o lado direto para que fique um atributo único; remover os atributos redundantes do lado esquerdo e, por fim, remover as dependências funcionais redundantes. 
