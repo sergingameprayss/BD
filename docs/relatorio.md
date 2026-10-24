@@ -24,7 +24,7 @@ Quando que acaba?
 Depois de passar por todas as dependências e não ter mais o que colocar, reiniciando o primeiro for, no segundo if, o atributo vai estar lá, então new_attr vai permanecer false.
 ### Mincover
 
-### ...
+
 
 
 ## Análise de complexidade
@@ -48,3 +48,5 @@ Lembrando dos passos para obter a cobertura mínima:
 ` mincover_07`: Exige apenas o passo 3. Saída esperada: F = { A -> B, B -> C, C -> D}
 ` mincover_08`: Exige os passos 1 e 3. Saída esperada: F = { A -> B, B -> C, C -> D }
 ` mincover_09`: Exige os três passos. Saída esperada: F = { A -> B, B -> C, A -> D, A -> E }
+` mincover_10`: Testa se o código identifica, no passo 2, que um lhs não pode ser separado. Saída esperada: F = { AB -> C, A -> D, B -> E }
+` mincover_11`: Testa se o código identifica repetições ou dependências triviais. Saída esperada: F = {A -> B}
