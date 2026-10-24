@@ -33,6 +33,13 @@ Depois de passar por todas as dependências e não ter mais o que colocar, reini
 
 
 ## Exemplos
+### Closure
+`closure_01`: Testa se o código é capaz de fazer mais de uma passada. Saída esperada: F = {A,B,C,D,E}, para fecho de A
+`closure_02`: Testa se o código exige que todas as letras do lado esquerdo estejam presentes para validar o lado direito. Saída esperada: F = {A, B, C, D, E}, para fecho AC
+`closure_03`: Testa fecho que não é superchave. Saída esperada: F = {A, B}, para fecho de A
+`closure_04`: Testa se o código identifica que não tem como incluir atributos, apenas o dado. Saída esperada: F = {A}, para fecho A
+
+
 ### Mincover
 Lembrando dos passos para obter a cobertura mínima:
 1) Decompor o lado direito;
