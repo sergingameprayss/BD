@@ -22,8 +22,17 @@ Então, inicialmente colocamos o atributo no fecho, depois para cada dependencia
 Se passar por esse if, entramos no segundo for, pois, se temos o atributo no lado esquerdo, podemos colocar os atributos do lado direito.
 Quando que acaba?
 Depois de passar por todas as dependências e não ter mais o que colocar, reiniciando o primeiro for, no segundo if, o atributo vai estar lá, então new_attr vai permanecer false.
-### Mincover
 
+### Mincover
+O algoritmo da cobertura mínima é dividida em três passos: decompor o lado direto para que fique um atributo único; remover os atributos redundantes do lado esquerdo e, por fim, remover as dependências funcionais redundantes. 
+
+O código recebe como parâmetro as dependências funcionais originais e um ponteiro para a cobertura mínima, que inicialmente está vazia e será construída ao longo de cada passo. A descrição de cada passo está separado em tópicos abaixo:
+
+Passo 1: Para cada dependência funcional, vemos quais letras estão no lado direito. Se a letra estiver do lado direito `if(sys->fds[i].rhs[j])` então criamos uma nova dependência funcional (primeiro for dentro do if) que conterá o lado esquerdo na íntegra (segundo for dentro do if) e o lado direito unitário ` fd_mincover->fds[idx].rhs[j] = true`.
+
+Passo 2: Para cada dependência funcional, resultante do passo 1, contamos quantas letras temos do lado esquerdo (segundo for) e, se for mais que uma (`if(count_lhs_attr > 1)`), verificamos se há redundância. Para cada letra presente no lado esquerdo (`if(fd_mincover->fds[i].lhs[k])`) calculamos o fecho ignorando esse atributo, se o lado direito estiver no fecho (`if(fd_mincover->fds[i].rhs[l] && attr_clos[l])`) então o atributo do lado esquerdo realmente é redundante e pode ser retirado (`fd_mincover->fds[i].lhs[k] =false`)
+
+Passo 3: Para cada dependência funcional, resultante do passo 2, criamos uma dependência funcional temporária (`fd_t temp_fd = fd_mincover->fds[i]`), salvamos o lado esquerdo da dependência a ser retirada (`lhs[idx++] = 'A' +j`), ignoramos a dependencia funcional (`fd_mincover->fds[i].lhs[j] = false; fd_mincover->fds[i].rhs[j] = false`) e calculamos o fecho, se o lado direito da dependência retirada ainda estiver no fecho significa que a dependência funcional realmente pode ser retirada, então devemos retirá-la e puxar todas as dependências "para trás" (bloco do else), senão apenas devolvemos a dependência (`fd_mincover->fds[i] = temp_fd`)
 
 
 
