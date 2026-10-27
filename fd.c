@@ -427,57 +427,65 @@ int normal_form(const fd_set_t *sys){
     return OK;
 }
 
+// Imprime um conjunto qualquer no formato:
+// X = {Y1, Y2, ..., Yn, }
 void print_set (const char *attrs, bool *s, int s_size) {
     printf("%s = { ", attrs);
     for (int i = 0; i < s_size; i++) {
-        if (s[i])
-            printf("%c, ", 'A' + i);
+        if (s[i]){
+            printf("%c", 'A' + i);
+        }
     }
-    printf("}\n");
+    printf(" }\n");
 }
 
+// Imprime todos os atributos de um lado de uma DF no formato:
+// ATTRS
+void print_attrs(const bool *attrs){
+    for (int i = 0; i < MAX_ATTRS; i++){
+        if (attrs[i]) printf("%c", 'A' + i);
+    }
+}
+
+// Imprime uma dependência funcional no formato:
+// lhs -> rhs
+void print_single_fd(const fd_t *fd){
+    print_attrs(fd->lhs);
+    printf(" -> ");
+    print_attrs(fd->rhs);
+}
+
+// Imprime o conjunto de dependências funcionais no formato:
+// lhs1 -> rhs1
+// lhs2 -> rhs2
+// ...
 void print_fd(fd_set_t *sys){
     if (!sys) {
         fprintf(stderr, "ERROR SYS SET DO NULL");
         return;
     }
+
     for(int i = 0; i < sys->size; i++){
-        for (int j = 0; j < MAX_ATTRS; j++) {
-            if (sys->fds[i].lhs[j])
-                printf("%c", 'A' + j);
-        }
-        printf(" -> ");
-        for (int j = 0; j < MAX_ATTRS; j++) {
-            if (sys->fds[i].rhs[j])
-                printf("%c", 'A' + j);
-        }
+        print_single_fd(&sys->fds[i]);
         printf("\n");
     }
 }
 
-
+// Imprime o conjunto de dependências funcionais no formato:
+// F = {fds1 -> fds1, fds2 -> fds2, ..., fdsn -> fdsn, }
 void print_fd_set (fd_set_t *sys) {
     if (!sys) {
         fprintf(stderr, "ERROR SYS SET DO NULL");
         return;
     }
-    char u = 'U';
-    print_set(&u, sys->u, MAX_ATTRS);
+
+    
+    print_set("U", sys->u, MAX_ATTRS);
 
     printf("F = { ");
     for (int i = 0; i < sys->size; i++) {
-        
-        for (int j = 0; j < MAX_ATTRS; j++) {
-            if (sys->fds[i].lhs[j])
-                printf("%c", 'A' + j);
-        }
-        printf(" -> ");
-        for (int j = 0; j < MAX_ATTRS; j++) {
-            if (sys->fds[i].rhs[j])
-                printf("%c", 'A' + j);
-        }
+        print_single_fd(&sys->fds[i]);
         printf(", ");
     }
     printf("}\n");
-
 }
