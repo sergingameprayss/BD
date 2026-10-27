@@ -131,12 +131,16 @@ int handle_standards (const char *op_name, int argc, char **argv, fd_set_t *sys)
             struct fd_set fd_mincover;
             mincover(sys, &fd_mincover);
             print_fd(&fd_mincover);
-        }
-        case KEYS:
-            //TODO implement this too
             break;
+        }
+        case KEYS:{
+            bool keys[MAX_FDS][MAX_ATTRS];
+            int num_keys = candidate_keys(sys, keys);
+            print_keys(keys, num_keys);
+            break;
+        }
         case NORMAL: 
-            //TODO implement this too too
+            normal_form(sys);
             break;
         default:
             return ERROR;
