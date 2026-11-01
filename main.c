@@ -66,10 +66,8 @@ int handle_closure (int argc, char **argv, fd_set_t *sys) {
         return 1;
     }
 
-    //make what we need boy
-    printf("closure pae\n");
     parse_fds_file(file_name, sys);
-    print_fd_set(sys);
+    //print_fd_set(sys);
 
     bool atributes_closure[MAX_ATTRS];
 
@@ -122,7 +120,6 @@ int handle_standards (const char *op_name, int argc, char **argv, fd_set_t *sys)
         return ERROR;
     }
 
-    printf("boa dogao!  operação escolhida foi: %s\n", op_name);
     parse_fds_file(file_name, sys);
     print_fd_set(sys);
 
