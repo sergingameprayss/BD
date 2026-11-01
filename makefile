@@ -5,7 +5,7 @@ CPPFLAGS ?=
 LDFLAGS  ?=
 LDLIBS   ?= 
 
-NAME     ?= sssaf24-tyf24-gtp24
+NAME     ?= sssaf24-tyf24-gtpt24
 
 NAME_TGZ   ?= $(NAME).tgz
 
