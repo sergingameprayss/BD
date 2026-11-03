@@ -296,17 +296,6 @@ int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
     return num_keys;
 }
 
-void print_keys(bool keys[][MAX_ATTRS], int num_keys){
-    for (int i = 0; i < num_keys; i++){
-        for (int j = 0; j < MAX_ATTRS; j++){
-            if (keys[i][j]){
-                printf("%c", 'A' + j);
-            }
-        }
-        printf("\n");
-    }
-}
-
 int normal_form(const fd_set_t *sys){
     bool keys[MAX_FDS][MAX_ATTRS];
     int num_keys = candidate_keys(sys, keys);
@@ -444,6 +433,18 @@ void print_set (const char *attrs, bool *s, int s_size) {
 void print_attrs(const bool *attrs){
     for (int i = 0; i < MAX_ATTRS; i++){
         if (attrs[i]) printf("%c", 'A' + i);
+    }
+}
+
+// Imprime todas as chaves candidatas de um conjunto de DFs no formato:
+// K11K12...K1n
+// K21K22...K2n
+// ...
+// Kn1Kn2...Knn
+void print_keys(bool keys[][MAX_ATTRS], int num_keys){
+    for (int i = 0; i < num_keys; i++){
+        print_attrs(keys[i]);
+        printf("\n");
     }
 }
 
