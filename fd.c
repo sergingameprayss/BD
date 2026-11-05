@@ -171,6 +171,7 @@ int mincover(const fd_set_t *sys, fd_set_t *fd_mincover){
     return OK;
 }
 
+// Verifca se o parâmetro test_set é uma superchave a partir do calculo do fecho de sys
 static bool is_superkey(const fd_set_t *sys, const bool *test_set){
     // Converte test_set para string de atributos
     char attr_str[MAX_ATTRS+1];
@@ -181,25 +182,22 @@ static bool is_superkey(const fd_set_t *sys, const bool *test_set){
             idx++;
         }
     }
-
     attr_str[idx] = '\0';
     
     // Calculo do fecho
-    bool attr_closure[MAX_ATTRS];
-    for (int i = 0; i < MAX_ATTRS; i++){
-        attr_closure[i] = false;
-    }
+    bool attr_closure[MAX_ATTRS] = {false};
     closure(sys, attr_str, attr_closure);
 
     // Verifica se eh superchave
     for (int i = 0; i < MAX_ATTRS; i++){
-        if (sys->u[i] && !attr_closure[i]){ // Atributo esta em U mas nao esta no fecho de test_set
+        if (sys->u[i] && !attr_closure[i]){ // Atributo esta em U, mas nao esta no fecho de test_set
             return false;
         }
     }
     return true;
 }
 
+// Verifica minimalidade de chaves candidatas, verificando se o parâmetro test_set contém alguma chave candidada de keys descobreta anteriormente.
 static bool has_prev_key(bool *test_set, bool keys[][MAX_ATTRS], int num_keys){
     for (int i = 0; i < num_keys; i++){
         bool is_subset = true;
@@ -219,14 +217,37 @@ static bool has_prev_key(bool *test_set, bool keys[][MAX_ATTRS], int num_keys){
     return false;
 }
 
-int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
-    int num_keys = 0;
-    bool essentials[MAX_ATTRS];
-    bool has_essentials = false;
-    for (int i = 0; i < MAX_ATTRS; i++){
-        essentials[i] = false;
+// Gera combinacoes de tamanho target_size de atributos a partir de sys.
+// Calcula a quantidade de chaves em *num_keys.
+static void generate_combinations(const fd_set_t *sys, 
+                                  const int *remaning_idx, int num_remaning, 
+                                  int start_idx, int chosen_count, int target_size, 
+                                  bool *test_set, bool keys[][MAX_ATTRS], int *num_keys){
+
+    // Caso base
+    if (chosen_count == target_size){
+        if (!has_prev_key(test_set, keys, *num_keys) && is_superkey(sys, test_set)){
+            memcpy(keys[*num_keys], test_set, MAX_ATTRS * sizeof(bool));
+            (*num_keys)++;
+        }
+        return;
     }
 
+    // Passo recursivo
+    for (int i = start_idx; i < num_remaning; i++){
+        int attr_idx = remaning_idx[i];
+
+        test_set[attr_idx] = true;
+        generate_combinations(sys, remaning_idx, num_remaning, i + 1, chosen_count + 1, target_size, test_set, keys, num_keys);
+        test_set[attr_idx] = false;
+    }
+}
+
+// Calcula todas as chaves candidadas de um conjunto de DFs a partir do parâmetro sys, salvando todas as chaves candidatas em keys.
+// Retorna a quantidade de chaves candidatas encontradas.
+int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
+    bool essentials[MAX_ATTRS] = {false};
+    bool has_essentials = false;
     int remaning_idx[MAX_ATTRS];
     int num_remaning = 0;
 
@@ -236,16 +257,19 @@ int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
             bool appears_at_rhs = false;
 
             for (int j = 0; j < sys->size; j++){
-                if (sys->fds[j].rhs[i] && !sys->fds[j].lhs[i]){
+                if (sys->fds[j].rhs[i] && !sys->fds[j].lhs[i]){ // DF existe no lado direito e não existe no esquerdo
                     appears_at_rhs = true;
                     break;
                 }
             }
 
+            // Atributo sys[i] é determinado por alguem
             if (appears_at_rhs){
                 remaning_idx[num_remaning] = i;
                 num_remaning++;
             }
+            // Atributo sys[i] nao eh determinado por nenhum outro atributo
+            // Existe atributo essencial
             else {
                 has_essentials = true;
                 essentials[i] = true;
@@ -253,58 +277,34 @@ int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
         }
     }
 
+    int num_keys = 0;
+
     // Testa se essentials já forma uma superchave
     if (has_essentials && is_superkey(sys, essentials)){
-        for (int i = 0; i < MAX_ATTRS; i++){
-            keys[0][i] = essentials[i];
-        }
-
+        memcpy(keys[0], essentials, MAX_ATTRS * sizeof(bool));
         num_keys = 1;
+
         return num_keys;
     }
 
     // Testa combinacoes dos atributos restantes, em ordem crescente
-    int total_mask = (1 << num_remaning);
-
     for (int tam = 1; tam <= num_remaning; tam++){
-        for(int mask = 1; mask < total_mask; mask++){
-            bool test_set[MAX_ATTRS];
-            memcpy(test_set, essentials, MAX_ATTRS);
-            int num_bits = 0;
-
-            for (int bit = 0; bit < num_remaning; bit++){
-                if (mask & (1 << bit)){
-                    num_bits++;
-                    int attr_idx = remaning_idx[bit];
-                    test_set[attr_idx] = true;
-                }
-            }
-
-            if (num_bits == tam){
-                if (!(has_prev_key(test_set, keys, num_keys))){
-                    if (is_superkey(sys, test_set)){
-                        for (int i = 0; i < MAX_ATTRS; i++){
-                            keys[num_keys][i] = test_set[i];
-                        }
-                        num_keys++;
-                    }
-                }
-            }
-        }
+        bool test_set[MAX_ATTRS];
+        memcpy(test_set, essentials, MAX_ATTRS * sizeof(bool));
+        generate_combinations(sys, remaning_idx, num_remaning, 0, 0, tam, test_set, keys, &num_keys);
     }
 
     return num_keys;
 }
 
+// Verifica se o conjunto de DFs respeitam (ou nao) a 3FN e BCNF.
+// Retorna OK se foi concluido com sucesso.
 int normal_form(const fd_set_t *sys){
     bool keys[MAX_FDS][MAX_ATTRS];
     int num_keys = candidate_keys(sys, keys);
 
-    bool is_prime[MAX_ATTRS];
-    for (int i = 0; i < MAX_ATTRS; i++){
-        is_prime[i] = false;
-    }
-
+    // Verifica atributos primos
+    bool is_prime[MAX_ATTRS] = {false};
     for (int i = 0; i < num_keys; i++){
         for (int j = 0; j < MAX_ATTRS; j++){
             if (keys[i][j]) is_prime[j] = true;
@@ -312,18 +312,18 @@ int normal_form(const fd_set_t *sys){
     }
 
 
-    bool bcnf_violated[sys->size];
-    bool tf_violated[sys->size];
-    for (int i = 0; i < sys->size; i++){
-        tf_violated[i] = bcnf_violated[i] = false;
-    }
-
     bool has_bcnf_violated = false;
-    bool has_tf_violated = false;
+    bool has_tnf_violated = false;
+    bool bcnf_violated[sys->size];
+    bool tnf_violated[sys->size];
+    memset(bcnf_violated, false, sys->size * sizeof(bool));
+    memset(tnf_violated, false, sys->size * sizeof(bool));
 
+    // Verifica violacoes de 3NF e BCNF
     for (int i = 0; i < sys->size; i++){
+        
+        // Verifica existencia de atributos triviais
         bool is_trivial = true;
-
         for (int j = 0; j < MAX_ATTRS; j++){
             if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j]){
                 is_trivial = false;
@@ -331,84 +331,58 @@ int normal_form(const fd_set_t *sys){
             }
         }
 
-        if (is_trivial || (is_superkey(sys, sys->fds[i].lhs))) continue;
-
-        bcnf_violated[i] = true;
-        has_bcnf_violated = true;
-
-        for (int j = 0; j < MAX_ATTRS; j++){
-            if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j] && !is_prime[j]){
-                tf_violated[i] = true;
-                has_tf_violated = true;
-                break;
+        // Violacoes das normas
+        // Violacao da BCNF pela definicao
+        if (!is_trivial && !(is_superkey(sys, sys->fds[i].lhs))){
+            bcnf_violated[i] = true;
+            has_bcnf_violated = true;
+    
+            for (int j = 0; j < MAX_ATTRS; j++){
+                // Violacao da 3NF pela definicao
+                if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j] && !is_prime[j]){
+                    tnf_violated[i] = true;
+                    has_tnf_violated = true;
+                    break;
+                }
             }
         }
     }
 
-    if (has_bcnf_violated){
-        printf("BCNF: VIOLATIONS\n");
-    }
-    else{
-        printf("BCNF: OK\n");
-    }
+    // Informacoes de violacoes de alguma norma junto dos motivos (caso violem)
+    if (has_bcnf_violated) printf("BCNF: VIOLATIONS\n");
+    else printf("BCNF: OK\n");
 
-    if (has_tf_violated){
-        printf("3NF: VIOLATIONS\n");
-    }
-    else {
-        printf("3NF: OK\n");
-    }
+    if (has_tnf_violated) printf("3NF: VIOLATIONS\n");
+    else printf("3NF: OK\n");
 
     for (int i = 0; i < sys->size; i++){
         if (bcnf_violated[i]){
             printf("VIOLATION BCNF: ");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if (sys->fds[i].lhs[j]){
-                    printf("%c", 'A' + j);
-                }
-            }
+            print_attrs(sys->fds[i].lhs);
             printf("->");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if(sys->fds[i].rhs[j]){
-                    printf("%c", 'A' + j);
-                }
-            }
-
+            print_attrs(sys->fds->rhs);
             printf(" (");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if(sys->fds[i].lhs[j]){
-                    printf("%c", 'A'+j);
-                }
-            }
+            print_attrs(sys->fds[i].lhs);
             printf(" not superkey)\n");
         }
 
-        if (tf_violated[i]){
-            printf("VIOLATION 3FN: ");
+        if (tnf_violated[i]){
+            // Verifica todos os atributos nao-primos
+            bool non_primes[MAX_ATTRS] = {false};
             for (int j = 0; j < MAX_ATTRS; j++){
-                if (sys->fds[i].lhs[j]){
-                    printf("%c", 'A' + j);
-                }
-            }
-            printf("->");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if(sys->fds[i].rhs[j]){
-                    printf("%c", 'A' + j);
+                if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j] && !is_prime[j]){
+                    non_primes[j] = true;
                 }
             }
 
+            printf("VIOLATION 3FN: ");
+            print_attrs(sys->fds[i].lhs);
+            printf("->");
+            print_attrs(sys->fds[i].rhs);
             printf(" (");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if(sys->fds[i].rhs[j] && !sys->fds[i].lhs[j] && !is_prime[j]){
-                    printf("%c", 'A'+j);
-                }
-            }
+            print_attrs(non_primes);
             printf(" not prime, )");
-            for (int j = 0; j < MAX_ATTRS; j++){
-                if(sys->fds[i].lhs[j]){
-                    printf("%c", 'A'+j);
-                }
-            }
+            print_attrs(sys->fds[i].lhs);
             printf(" not superkey)\n");
         }
     }
