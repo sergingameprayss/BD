@@ -244,8 +244,10 @@ static void generate_combinations(const fd_set_t *sys,
 }
 
 // Calcula todas as chaves candidadas de um conjunto de DFs a partir do parâmetro sys, salvando todas as chaves candidatas em keys.
-// Retorna a quantidade de chaves candidatas encontradas.
+// Retorna a quantidade de chaves candidatas encontradas ou -1 em caso de erro.
 int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
+    if (!sys || !keys) return -1;
+
     bool essentials[MAX_ATTRS] = {false};
     bool has_essentials = false;
     int remaning_idx[MAX_ATTRS];
@@ -263,12 +265,12 @@ int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
                 }
             }
 
-            // Atributo sys[i] é determinado por alguem
+            // Atributo sys->u[i] é determinado por alguem
             if (appears_at_rhs){
                 remaning_idx[num_remaning] = i;
                 num_remaning++;
             }
-            // Atributo sys[i] nao eh determinado por nenhum outro atributo
+            // Atributo sys->u[i] nao eh determinado por nenhum outro atributo
             // Existe atributo essencial
             else {
                 has_essentials = true;
@@ -298,8 +300,10 @@ int candidate_keys(const fd_set_t *sys, bool keys[][MAX_ATTRS]){
 }
 
 // Verifica se o conjunto de DFs respeitam (ou nao) a 3FN e BCNF.
-// Retorna OK se foi concluido com sucesso.
+// Retorna OK se foi concluido com sucesso e ERROR em caso de erro.
 int normal_form(const fd_set_t *sys){
+    if (!sys) return ERROR;
+
     bool keys[MAX_FDS][MAX_ATTRS];
     int num_keys = candidate_keys(sys, keys);
 
@@ -310,7 +314,6 @@ int normal_form(const fd_set_t *sys){
             if (keys[i][j]) is_prime[j] = true;
         }
     }
-
 
     bool has_bcnf_violated = false;
     bool has_tnf_violated = false;
