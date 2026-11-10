@@ -384,7 +384,7 @@ int normal_form(const fd_set_t *sys){
             print_attrs(sys->fds[i].rhs);
             printf(" (");
             print_attrs(non_primes);
-            printf(" not prime, )");
+            printf(" not prime, ");
             print_attrs(sys->fds[i].lhs);
             printf(" not superkey)\n");
         }
