@@ -5,7 +5,7 @@ CPPFLAGS ?=
 LDFLAGS  ?=
 LDLIBS   ?= 
 
-NAME     ?= sssaf24-tyf24-gtpt24
+NAME     ?= sergio_20242337_thamiris_20243604_giuliano_20240305
 
 NAME_TGZ   ?= $(NAME).tgz
 
