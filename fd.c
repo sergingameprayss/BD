@@ -325,7 +325,7 @@ int normal_form(const fd_set_t *sys){
     // Verifica violacoes de 3NF e BCNF
     for (int i = 0; i < sys->size; i++){
         
-        // Verifica existencia de atributos triviais
+        // Verifica existencia de DFs triviais
         bool is_trivial = true;
         for (int j = 0; j < MAX_ATTRS; j++){
             if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j]){
@@ -363,7 +363,7 @@ int normal_form(const fd_set_t *sys){
             printf("VIOLATION BCNF: ");
             print_attrs(sys->fds[i].lhs);
             printf("->");
-            print_attrs(sys->fds->rhs);
+            print_attrs(sys->fds[i].rhs);
             printf(" (");
             print_attrs(sys->fds[i].lhs);
             printf(" not superkey)\n");
