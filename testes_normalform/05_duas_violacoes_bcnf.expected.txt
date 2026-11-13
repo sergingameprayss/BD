@@ -1,0 +1,4 @@
+BCNF: VIOLATIONS
+3NF: OK
+VIOLATION BCNF: A->B (A not superkey)
+VIOLATION BCNF: B->A (B not superkey)

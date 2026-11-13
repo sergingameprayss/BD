@@ -1,0 +1,6 @@
+BCNF: VIOLATIONS
+3NF: VIOLATIONS
+VIOLATION BCNF: B->C (B not superkey)
+VIOLATION BCNF: B->D (B not superkey)
+VIOLATION 3NF: B->C (C not prime, B not superkey)
+VIOLATION 3NF: B->D (D not prime, B not superkey)
