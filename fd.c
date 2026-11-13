@@ -360,35 +360,33 @@ int normal_form(const fd_set_t *sys){
 
     for (int i = 0; i < sys->size; i++){
         if (bcnf_violated[i]){
-            printf("VIOLATION BCNF: ");
-            print_attrs(sys->fds[i].lhs);
-            printf("->");
-            print_attrs(sys->fds[i].rhs);
-            printf(" (");
-            print_attrs(sys->fds[i].lhs);
-            printf(" not superkey)\n");
+            
+            // Decomposição do lado direito
+            for (int j = 0; j < MAX_ATTRS; j++){
+                if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j]){
+                    printf("VIOLATION BCNF: ");
+                    print_attrs(sys->fds[i].lhs);
+                    printf("->%c (", 'A' + j);
+                    print_attrs(sys->fds[i].lhs);
+                    printf(" not superkey)\n");
+                }
+            }
         }
     }
 
     for (int i = 0; i < sys->size; i++){
         if (tnf_violated[i]){
-            // Verifica todos os atributos nao-primos
-            bool non_primes[MAX_ATTRS] = {false};
+
+            // Decomposição do lado direito
             for (int j = 0; j < MAX_ATTRS; j++){
                 if (sys->fds[i].rhs[j] && !sys->fds[i].lhs[j] && !is_prime[j]){
-                    non_primes[j] = true;
+                    printf("VIOLATION 3NF: ");
+                    print_attrs(sys->fds[i].lhs);
+                    printf("->%c (%c not prime, ", 'A' + j, 'A' + j);
+                    print_attrs(sys->fds[i].lhs);
+                    printf(" not superkey)\n");
                 }
             }
-
-            printf("VIOLATION 3NF: ");
-            print_attrs(sys->fds[i].lhs);
-            printf("->");
-            print_attrs(sys->fds[i].rhs);
-            printf(" (");
-            print_attrs(non_primes);
-            printf(" not prime, ");
-            print_attrs(sys->fds[i].lhs);
-            printf(" not superkey)\n");
         }
     }
 
