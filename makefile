@@ -29,13 +29,15 @@ $(OBJDIR)/%.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 tgz:
-	@echo "Packaging all source code into $(TARGET)..."
-	@tar -czf /tmp/$(TARGET) \
+	@echo "Packaging all source code into $(NAME_TGZ)..."
+	@tar -czf /tmp/$(NAME_TGZ) \
 		--exclude='*.tgz' \
 		--exclude='*.o' \
+		--exclude='$(OBJDIR)' \
+		--exclude='$(TARGET)' \
 		--exclude='.git' \
 		--exclude='.vscode' \
-		. && mv /tmp/$(TARGET) .
+		. && mv /tmp/$(NAME_TGZ) .
 
 
 clean:
