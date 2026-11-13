@@ -368,7 +368,9 @@ int normal_form(const fd_set_t *sys){
             print_attrs(sys->fds[i].lhs);
             printf(" not superkey)\n");
         }
+    }
 
+    for (int i = 0; i < sys->size; i++){
         if (tnf_violated[i]){
             // Verifica todos os atributos nao-primos
             bool non_primes[MAX_ATTRS] = {false};
@@ -378,7 +380,7 @@ int normal_form(const fd_set_t *sys){
                 }
             }
 
-            printf("VIOLATION 3FN: ");
+            printf("VIOLATION 3NF: ");
             print_attrs(sys->fds[i].lhs);
             printf("->");
             print_attrs(sys->fds[i].rhs);
@@ -397,9 +399,11 @@ int normal_form(const fd_set_t *sys){
 // X = {Y1, Y2, ..., Yn, }
 void print_set (const char *attrs, bool *s, int s_size) {
     printf("%s = { ", attrs);
+    const char *sep = "";
     for (int i = 0; i < s_size; i++) {
         if (s[i]){
-            printf("%c", 'A' + i);
+            printf("%s%c", sep, 'A' + i);
+            sep = ", ";
         }
     }
     printf(" }\n");
@@ -428,6 +432,13 @@ void print_keys(bool keys[][MAX_ATTRS], int num_keys){
 // Imprime uma dependência funcional no formato:
 // lhs -> rhs
 void print_single_fd(const fd_t *fd){
+    static const int empty[MAX_ATTRS] = {0};
+    if (memcmp(fd->lhs, empty, sizeof(fd->lhs)) == 0 &&
+        memcmp(fd->rhs, empty, sizeof(fd->rhs)) == 0)
+        {
+            return;
+        }
+
     print_attrs(fd->lhs);
     printf(" -> ");
     print_attrs(fd->rhs);
@@ -461,9 +472,11 @@ void print_fd_set (fd_set_t *sys) {
     print_set("U", sys->u, MAX_ATTRS);
 
     printf("F = { ");
+    const char *sep = "";
     for (int i = 0; i < sys->size; i++) {
+        printf("%s", sep);
         print_single_fd(&sys->fds[i]);
-        printf(", ");
+        sep = ", ";
     }
-    printf("}\n");
+    printf(" }\n");
 }

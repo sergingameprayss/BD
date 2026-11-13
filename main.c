@@ -121,7 +121,7 @@ int handle_standards (const char *op_name, int argc, char **argv, fd_set_t *sys)
     }
 
     parse_fds_file(file_name, sys);
-    print_fd_set(sys);
+    // print_fd_set(sys);
 
     switch (operation) {
         case MIN_COVER:{
