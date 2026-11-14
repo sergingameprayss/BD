@@ -216,4 +216,130 @@ A -> B
 
 ## Chave Candidata
 
+`key_01`: Testa o caso de um único atributo essencial já ser uma superchave.
+```bash
+U = {A, B, C, D}
+F = {A->B, B->C, C->D}
+```
+
+Saída esperada:
+```bash
+A
+```
+
+`key_02`: Testa o tratamento d atributo que não aparecem em nenuma DF, obrigando o atributo ser essencial.
+```bash
+U = {A, B, C, D, E}
+F = {A->B, B->C, C->D}
+```
+
+Saída esperada:
+```bash
+AE
+```
+
+`key_03`: Testa dependência cíclica sem atributos essenciais, sendo necessário a busca combinatória em todo conjunto U.
+```bash
+U = {A, B, C}
+F = {A->B, B->C, C->A}
+```
+
+Saída esperada:
+```bash
+A
+B
+C
+```
+
+`key_04`: Testa caso de borda em que o conjunto de DFs é vazio, com  a única chave candidata ser todo o conjunto U.
+```bash
+U = {A, B, C}
+F = { }
+```
+
+Saída esperada:
+```bash
+ABC
+```
+
+`key_05`: Testa toda a execução do algoritmo, com A sendo essencial, mas não sendo superchave, exigindo a busca combinatória com os não-essenciais.
+```bash
+U = {A, B, C, D}
+F = {AB->C, C->D, D->B}
+```
+
+Saída esperada:
+```bash
+AB
+AC
+AD
+```
+
 ## Verificar BCFN e 3FN
+
+`normalform_01`: Testa o caso ideal em que todos os determinantes são superchaves, não violando as formas normais.
+```bash
+U = {A, B, C}
+F = {A->B, A->C}
+```
+
+Saída esperada:
+```bash
+BCNF: OK
+3NF: OK
+```
+
+`normalform_02`: Testa o caso em que BCFN é violada, mas 3FN é respeitada.
+```bash
+U = {A, B, C}
+F = {AB->C, C->B}
+```
+
+Saída esperada:
+```bash
+BCNF: VIOLATIONS
+3NF: OK
+VIOLATION BCNF: C->B (C not superkey)
+```
+
+`normalform_03`: Testa uma dependência transitiva que viola ambas as formas normais.
+```bash
+U = {A, B, C}
+F = {A->B, B->C}
+```
+
+Saída esperada:
+```bash
+BCNF: VIOLATIONS
+3NF: VIOLATIONS
+VIOLATION BCNF: B->C (B not superkey)
+VIOLATION 3NF: B->C (C not prime, B not superkey)
+```
+
+`normalform_04`: Testa o filtro de depência trivial, confirmando que não causará uma falsa violação.
+```bash
+U = {A, B, C}
+F = {A->B, B->B, A->C}
+```
+
+Saída esperada:
+```bash
+BCNF: OK
+3NF: OK
+```
+
+`normalform_05`: Testa a detecção de múltiplas violações transitivas.
+```bash
+U = {A, B, C, D, E}
+F = {AB->C, C->D, D->E}
+```
+
+Saída esperada:
+```bash
+BCNF: VIOLATIONS
+3NF: VIOLATIONS
+VIOLATION BCNF: C->D (C not superkey)
+VIOLATION BCNF: D->E (D not superkey)
+VIOLATION 3NF: C->D (D not prime, C not superkey)
+VIOLATION 3NF: D->E (E not prime, D not superkey)
+```
